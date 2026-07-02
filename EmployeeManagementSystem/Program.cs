@@ -9,8 +9,7 @@ builder.Services.AddControllersWithViews();
 // Register DbContext
 builder.Services.AddDbContext<EmployeeDbContext>(options =>
     options.UseMySQL(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+    builder.Configuration.GetConnectionString("DefaultConnection")!));
 
 var app = builder.Build();
 

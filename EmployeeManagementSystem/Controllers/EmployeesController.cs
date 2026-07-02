@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using EmployeeManagementSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using EmployeeManagementSystem.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace EmployeeManagementSystem.Controllers
 {
@@ -19,18 +21,18 @@ namespace EmployeeManagementSystem.Controllers
         }
 
         // GET: Employees
-        public async Task<IActionResult> Index(string searchString, string sortOrder)
+        public async Task<IActionResult> Index(string searchString, string sortOrder, int? page)
         {
             ViewData["CurrentFilter"] = searchString;
-
-            ViewData["NameSort"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["CurrentSort"] = sortOrder;
+            ViewData["NameSort"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["SalarySort"] = sortOrder == "salary" ? "salary_desc" : "salary";
 
             var employees = from e in _context.Employees
                             select e;
 
             // Search
-            if (!String.IsNullOrEmpty(searchString))
+            if (!string.IsNullOrEmpty(searchString))
             {
                 employees = employees.Where(e =>
                     e.Name.Contains(searchString) ||
@@ -58,7 +60,10 @@ namespace EmployeeManagementSystem.Controllers
                     break;
             }
 
-            return View(await employees.ToListAsync());
+            int pageSize = 5;
+            int pageNumber = page ?? 1;
+
+            return View(employees.ToPagedList(pageNumber, pageSize));
         }
 
         // GET: Employees/Details/5

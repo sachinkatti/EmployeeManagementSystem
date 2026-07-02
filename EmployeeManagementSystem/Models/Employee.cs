@@ -7,14 +7,14 @@ namespace EmployeeManagementSystem.Models
         public int Id { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         [Required]
-        public string Department { get; set; }
+        public required string Department { get; set; }
 
         [Range(1, 9999999)]
         public decimal Salary { get; set; }

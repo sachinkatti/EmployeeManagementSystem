@@ -1,4 +1,7 @@
-﻿@model IEnumerable<EmployeeManagementSystem.Models.Employee>
+﻿@model X.PagedList.IPagedList<EmployeeManagementSystem.Models.Employee>
+
+@using X.PagedList.Mvc.Core
+@using X.PagedList
 
 @{
     ViewData["Title"] = "Employees";
@@ -120,5 +123,15 @@
         </tbody>
 
     </table>
+
+    <div class="mt-3">
+        @Html.PagedListPager(Model, page => Url.Action("Index",
+            new
+            {
+                page,
+                searchString = ViewData["CurrentFilter"],
+                sortOrder = ViewData["CurrentSort"]
+            }))
+    </div>
 
 </div>
