@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using X.PagedList;
 using X.PagedList.Extensions;
+using Microsoft.AspNetCore.Http;
 
 namespace EmployeeManagementSystem.Controllers
 {
@@ -20,9 +21,28 @@ namespace EmployeeManagementSystem.Controllers
             _context = context;
         }
 
+        private IActionResult CheckLogin()
+        {
+            if (HttpContext.Session.GetString("User") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return null;
+        }
+        private bool HasRole(params string[] roles)
+        {
+            var role = HttpContext.Session.GetString("Role");
+            return role != null && roles.Contains(role);
+        }
+
         // GET: Employees
         public async Task<IActionResult> Index(string searchString, string sortOrder, int? page)
         {
+            var result = CheckLogin();
+            if (result != null)
+                return result;
+
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentSort"] = sortOrder;
             ViewData["NameSort"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
@@ -69,6 +89,10 @@ namespace EmployeeManagementSystem.Controllers
         // GET: Employees/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            var result = CheckLogin();
+            if (result != null)
+                return result;
+
             if (id == null)
             {
                 return NotFound();
@@ -85,8 +109,18 @@ namespace EmployeeManagementSystem.Controllers
         }
 
         // GET: Employees/Create
+        // GET: Employees/Create
         public IActionResult Create()
         {
+            var result = CheckLogin();
+            if (result != null)
+                return result;
+
+            if (!HasRole("Admin", "HR"))
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
             ViewBag.Departments = new List<string>
     {
         "Developer",
@@ -106,26 +140,46 @@ namespace EmployeeManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Email,Department,Salary,JoiningDate")] Employee employee)
         {
+            var result = CheckLogin();
+            if (result != null)
+                return result;
+
+            if (!HasRole("Admin", "HR"))
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(employee);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewBag.Departments = new List<string>
-            {
-    "Developer",
-    "Tester",
-    "HR",
-    "Manager",
-    "Support"
-};
+    {
+        "Developer",
+        "Tester",
+        "HR",
+        "Manager",
+        "Support"
+    };
+
             return View(employee);
         }
 
         // GET: Employees/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            var result = CheckLogin();
+            if (result != null)
+                return result;
+
+            if (!HasRole("Admin", "HR"))
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -157,6 +211,15 @@ namespace EmployeeManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,Department,Salary,JoiningDate")] Employee employee)
         {
+            var result = CheckLogin();
+            if (result != null)
+                return result;
+
+            if (!HasRole("Admin", "HR"))
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
             if (id != employee.Id)
             {
                 return NotFound();
@@ -196,6 +259,15 @@ namespace EmployeeManagementSystem.Controllers
         // GET: Employees/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            var result = CheckLogin();
+            if (result != null)
+                return result;
+
+            if (!HasRole("Admin"))
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -216,6 +288,15 @@ namespace EmployeeManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var result = CheckLogin();
+            if (result != null)
+                return result;
+
+            if (!HasRole("Admin"))
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
             var employee = await _context.Employees.FindAsync(id);
             if (employee != null)
             {

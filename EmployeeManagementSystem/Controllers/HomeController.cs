@@ -1,5 +1,6 @@
 using EmployeeManagementSystem.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace EmployeeManagementSystem.Controllers
 {
@@ -14,6 +15,11 @@ namespace EmployeeManagementSystem.Controllers
 
         public IActionResult Index()
         {
+            if (HttpContext.Session.GetString("User") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             ViewBag.TotalEmployees = _context.Employees.Count();
 
             ViewBag.TotalDepartments = _context.Employees
@@ -25,6 +31,17 @@ namespace EmployeeManagementSystem.Controllers
                 ? _context.Employees.Max(e => e.Salary)
                 : 0;
 
+            return View();
+
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        public IActionResult AccessDenied()
+        {
             return View();
         }
     }
